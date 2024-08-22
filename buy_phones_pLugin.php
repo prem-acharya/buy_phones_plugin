@@ -270,6 +270,12 @@ function buy_phones_search_shortcode()
         <div id="priceDisplay" style="display:none;">
             <div id="priceContent"></div>
         </div>
+        <!-- Modal for displaying selected item details -->
+        <div id="sellItemModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:1000; background:white; padding:20px; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+            <h2 id="modalTitle"></h2>
+            <p id="modalDetails"></p>
+            <button onclick="closeModal()">Close</button>
+        </div>
     </div>
 
     <script type="text/javascript">
@@ -277,6 +283,9 @@ function buy_phones_search_shortcode()
         const resultsDiv = document.getElementById('searchResults');
         const priceDisplay = document.getElementById('priceDisplay');
         const priceContent = document.getElementById('priceContent');
+        const sellItemModal = document.getElementById('sellItemModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalDetails = document.getElementById('modalDetails');
 
         document.getElementById('phoneSearch').addEventListener('input', function () {
             const searchText = this.value.trim();
@@ -318,21 +327,34 @@ function buy_phones_search_shortcode()
             priceContent.innerHTML = `
                 <img src="${item.image_url}" style="width:100px; height:auto;">
                 <h2>${item.variant ? `${item.model_name} (${item.variant})` : `${item.model_name}`}</h2>
-                <button onclick="displayPrice(${item.excellent})">Excellent Condition</button>
-                <button onclick="displayPrice(${item.good})">Good Condition</button>
-                <button onclick="displayPrice(${item.average})">Average Condition</button>
+                <button onclick="displayPrice(${item.excellent}); showSellButton('${item.model_name}', '${item.variant}', ${item.excellent}, '${item.image_url}');">Excellent Condition</button>
+                <button onclick="displayPrice(${item.good}); showSellButton('${item.model_name}', '${item.variant}', ${item.good}, '${item.image_url}');">Good Condition</button>
+                <button onclick="displayPrice(${item.average}); showSellButton('${item.model_name}', '${item.variant}', ${item.average}, '${item.image_url}');">Average Condition</button>
                 <p>${item.sold_out}+ already sold on Phonestation Plus</p>
             `;
             priceDisplay.style.display = 'block';
         }
 
+        function showSellButton(model, variant, price, imageUrl) {
+            const sellButtonHtml = `<button onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}')">Sell This Item</button>`;
+            priceContent.innerHTML += `<div id="sellButton">${sellButtonHtml}</div>`;
+        }
+
+        function showSellItemForm(model, variant, price, imageUrl) {
+            modalTitle.textContent = 'Sell This Item';
+            modalDetails.innerHTML = `<img src="${imageUrl}" style="width:100px; height:auto;"><br>Model: ${model}, Variant: ${variant}, Price: ₹${price}`;
+            sellItemModal.style.display = 'block';
+        }
+
+        function closeModal() {
+            sellItemModal.style.display = 'none';
+        }
+
         function displayPrice(price) {
-            const priceParagraph = document.querySelector('#priceContent .price');
-            if (priceParagraph) {
-                priceParagraph.textContent = `Price: ₹${price}`;
-            } else {
-                priceContent.innerHTML += `<p class="price">Price: ₹${price}</p>`;
-            }
+            const priceParagraph = document.createElement('p');
+            priceParagraph.className = 'price';
+            priceParagraph.textContent = `Price: ₹${price}`;
+            priceContent.appendChild(priceParagraph);
         }
     </script>
     <?php
@@ -356,7 +378,13 @@ function buy_phones_search_handler()
         $wpdb->esc_like($search) . '%'
     ), ARRAY_A);
 
-    echo json_encode($results);
+    $json_output = json_encode($results);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        error_log('JSON encode error: ' . json_last_error_msg());
+        wp_die('Error encoding JSON', '', array('response' => 500));
+    }
+    
+    echo $json_output;
     wp_die();
 }
 add_action('wp_ajax_buy_phones_search', 'buy_phones_search_handler');
