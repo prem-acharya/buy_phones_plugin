@@ -344,7 +344,7 @@ function buy_phones_search_handler()
         "SELECT p.*, pm.guid AS image_url FROM $table_name p
          LEFT JOIN {$wpdb->prefix}posts pm ON p.image_id = pm.ID
          WHERE p.model_name LIKE %s",
-        '%' . $wpdb->esc_like($search) . '%'
+        $wpdb->esc_like($search) . '%'
     ), ARRAY_A);
 
     echo json_encode($results);
