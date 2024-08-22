@@ -278,8 +278,8 @@ function buy_phones_search_shortcode()
         const priceDisplay = document.getElementById('priceDisplay');
         const priceContent = document.getElementById('priceContent');
 
-        searchInput.addEventListener('input', function () {
-            const searchText = searchInput.value.trim();
+        document.getElementById('phoneSearch').addEventListener('input', function () {
+            const searchText = this.value.trim();
 
             if (searchText.length > 0) {
                 fetch(`<?php echo admin_url('admin-ajax.php'); ?>?action=buy_phones_search&query=${encodeURIComponent(searchText)}`)
@@ -292,9 +292,9 @@ function buy_phones_search_shortcode()
                             data.forEach(item => {
                                 const div = document.createElement('div');
                                 div.className = 'result-item';
-                                div.textContent = item.variant ? `${item.model_name} (${item.variant})` : item.model_name;
+                                div.innerHTML = `<img src="${item.image_url}" alt="${item.model_name}" style="width:50px; height:auto;"> ${item.variant ? `${item.model_name} (${item.variant})` : item.model_name}`;
                                 div.onclick = () => {
-                                    displayPrice(item);
+                                    displayPriceOptions(item);
                                     searchInput.value = div.textContent;
                                 };
                                 resultsDiv.appendChild(div);
@@ -313,17 +313,26 @@ function buy_phones_search_shortcode()
             }
         });
 
-        function displayPrice(item) {
+        function displayPriceOptions(item) {
             resultsDiv.style.display = 'none';
-            const imageUrl = item.image_url;
             priceContent.innerHTML = `
-                <img src="${imageUrl}" style="width:100px; height:auto;">
+                <img src="${item.image_url}" style="width:100px; height:auto;">
                 <h2>${item.variant ? `${item.model_name} (${item.variant})` : `${item.model_name}`}</h2>
-                <p class="price">Excellent Condition: ₹${item.excellent}</p>
-                <p class="price">Good Condition: ₹${item.good}</p>
-                <p class="price">Average Condition: ₹${item.average}</p>
-                <p>${item.sold_out}+ already sold on Phonestation Plus</p>`;
+                <button onclick="displayPrice(${item.excellent})">Excellent Condition</button>
+                <button onclick="displayPrice(${item.good})">Good Condition</button>
+                <button onclick="displayPrice(${item.average})">Average Condition</button>
+                <p>${item.sold_out}+ already sold on Phonestation Plus</p>
+            `;
             priceDisplay.style.display = 'block';
+        }
+
+        function displayPrice(price) {
+            const priceParagraph = document.querySelector('#priceContent .price');
+            if (priceParagraph) {
+                priceParagraph.textContent = `Price: ₹${price}`;
+            } else {
+                priceContent.innerHTML += `<p class="price">Price: ₹${price}</p>`;
+            }
         }
     </script>
     <?php
