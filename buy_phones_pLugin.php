@@ -44,6 +44,15 @@ function my_plugin_init()
 
     // Register admin page to show the table list
     add_action('admin_menu', 'register_my_admin_page');
+
+    // Enqueue media library scripts and styles
+    add_action('admin_enqueue_scripts', 'enqueue_media_library_scripts');
+}
+
+
+function enqueue_media_library_scripts() {
+    wp_enqueue_media();
+    wp_enqueue_script('my-plugin-media-script', plugin_dir_url(__FILE__) . 'buy_phones_plugin_media_script.js', array('jquery'), '1.0', true);
 }
 
 // Function to add menu to the admin bar
@@ -105,13 +114,11 @@ function handle_form_submission()
             require_once(ABSPATH . 'wp-admin/includes/image.php');
             $attach_data = wp_generate_attachment_metadata($attach_id, $filename);
             wp_update_attachment_metadata($attach_id, $attach_data);
-        } else {
-            // Handle the error according to your error handling policies
         }
     }
 
     // Insert new record
-    if (isset($_POST['insert'])) {
+    if (isset($_POST['insert']) && isset($_POST['image_id'])) {
         $wpdb->insert($table_name, array(
             'brand_name' => sanitize_text_field($_POST['brand_name']),
             'model_name' => sanitize_text_field($_POST['model_name']),
@@ -120,10 +127,9 @@ function handle_form_submission()
             'good' => floatval($_POST['good']),
             'average' => floatval($_POST['average']),
             'sold_out' => intval($_POST['sold_out']),
-            'image_id' => $attach_id,
+            'image_id' => intval($_POST['image_id']),
         ));
     }
-
     // Update existing record
     if (isset($_POST['update'])) {
         $wpdb->update(
@@ -136,7 +142,7 @@ function handle_form_submission()
                 'good' => floatval($_POST['good']),
                 'average' => floatval($_POST['average']),
                 'sold_out' => intval($_POST['sold_out']),
-                'image_id' => $attach_id,
+                'image_id' => intval($_POST['image_id']),
             ),
             array('id' => intval($_POST['id']))
         );
@@ -180,7 +186,17 @@ function display_custom_table_list()
     echo '<tr><th>Good</th><td><input type="number" step="0.01" name="good" value="' . esc_attr($edit_data ? $edit_data->good : '') . '" required></td></tr>';
     echo '<tr><th>Average</th><td><input type="number" step="0.01" name="average" value="' . esc_attr($edit_data ? $edit_data->average : '') . '" required></td></tr>';
     echo '<tr><th>Sold Out</th><td><input type="number" name="sold_out" value="' . esc_attr($edit_data ? $edit_data->sold_out : '') . '" required></td></tr>';
-    echo '<tr><th>Image</th><td><input type="file" name="phone_image" accept="image/*"></td></tr>';
+    echo '<tr><th>Image</th><td>';
+    echo '<button type="button" id="select-image-button" class="button">Select Image</button>';
+    echo '<input type="hidden" name="image_id" id="image-id-input" value="' . esc_attr($edit_data ? $edit_data->image_id : '') . '">';
+    echo '<div id="image-preview">';
+    if ($edit_data && $edit_data->image_id) {
+        $image_url = wp_get_attachment_url($edit_data->image_id);
+        echo '<img src="' . esc_url($image_url) . '" style="max-width:100px;max-height:100px;" />';
+    }
+    echo '</div>';
+    echo '</td></tr>';
+    
     echo '</table>';
     echo '<input type="submit" name="' . ($edit_data ? 'update' : 'insert') . '" value="' . ($edit_data ? 'Update' : 'Add New') . '" class="button-primary">';
     echo '</form>';
