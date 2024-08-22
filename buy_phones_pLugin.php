@@ -2,7 +2,7 @@
 /*
 Plugin Name: Buy Phones PLugin
 Description: A plugin to manage phone sales and inventory.
-Version: 1.1
+Version: 1.2
 Author: Prem Acharya
 */
 
@@ -10,7 +10,8 @@ Author: Prem Acharya
 register_activation_hook(__FILE__, 'create_my_custom_table');
 
 // Function to create the custom table
-function create_my_custom_table() {
+function create_my_custom_table()
+{
     global $wpdb;
     $table_name = $wpdb->prefix . 'buy_phones_plugin';
 
@@ -25,6 +26,7 @@ function create_my_custom_table() {
         good DECIMAL(10, 2) NOT NULL,
         average DECIMAL(10, 2) NOT NULL,
         sold_out INT(11) NOT NULL,
+        image_id INT(11),
         PRIMARY KEY (id)
     ) $charset_collate;";
 
@@ -35,27 +37,30 @@ function create_my_custom_table() {
 // Hook to initialize the plugin
 add_action('init', 'my_plugin_init');
 
-function my_plugin_init() {
+function my_plugin_init()
+{
     // Add admin bar menu
     add_action('admin_bar_menu', 'add_admin_bar_menu', 100);
-    
+
     // Register admin page to show the table list
     add_action('admin_menu', 'register_my_admin_page');
 }
 
 // Function to add menu to the admin bar
-function add_admin_bar_menu($wp_admin_bar) {
+function add_admin_bar_menu($wp_admin_bar)
+{
     $args = array(
-        'id'    => 'my_plugin_menu',
+        'id' => 'my_plugin_menu',
         'title' => 'Buy Phones',
-        'href'  => admin_url('admin.php?page=my_custom_table_list'),
-        'meta'  => array('class' => 'my-plugin-menu')
+        'href' => admin_url('admin.php?page=my_custom_table_list'),
+        'meta' => array('class' => 'my-plugin-menu')
     );
     $wp_admin_bar->add_node($args);
 }
 
 // Function to register the admin page
-function register_my_admin_page() {
+function register_my_admin_page()
+{
     add_menu_page(
         'Buy Phones',
         'Buy Phones',
@@ -68,10 +73,42 @@ function register_my_admin_page() {
 }
 
 // Function to handle insert, update, and delete operations
-function handle_form_submission() {
+function handle_form_submission()
+{
 
     global $wpdb;
     $table_name = $wpdb->prefix . 'buy_phones_plugin';
+
+    // Handle image upload
+    if (!function_exists('wp_handle_upload')) {
+        require_once(ABSPATH . 'wp-admin/includes/file.php');
+    }
+    // Handle image upload
+    if (isset($_FILES['phone_image']) && $_FILES['phone_image']['error'] == UPLOAD_ERR_OK) {
+        $uploadedfile = $_FILES['phone_image'];
+        $upload_overrides = array('test_form' => false);
+        $movefile = wp_handle_upload($uploadedfile, $upload_overrides);
+
+        if ($movefile && !isset($movefile['error'])) {
+            // File is uploaded successfully. Now insert it into the WordPress Media Library.
+            $filename = $movefile['file'];
+            $wp_filetype = wp_check_filetype(basename($filename), null);
+            $wp_upload_dir = wp_upload_dir();
+            $attachment = array(
+                'guid' => $wp_upload_dir['url'] . '/' . basename($filename),
+                'post_mime_type' => $wp_filetype['type'],
+                'post_title' => preg_replace('/\.[^.]+$/', '', basename($filename)),
+                'post_content' => '',
+                'post_status' => 'inherit'
+            );
+            $attach_id = wp_insert_attachment($attachment, $filename);
+            require_once(ABSPATH . 'wp-admin/includes/image.php');
+            $attach_data = wp_generate_attachment_metadata($attach_id, $filename);
+            wp_update_attachment_metadata($attach_id, $attach_data);
+        } else {
+            // Handle the error according to your error handling policies
+        }
+    }
 
     // Insert new record
     if (isset($_POST['insert'])) {
@@ -83,6 +120,7 @@ function handle_form_submission() {
             'good' => floatval($_POST['good']),
             'average' => floatval($_POST['average']),
             'sold_out' => intval($_POST['sold_out']),
+            'image_id' => $attach_id,
         ));
     }
 
@@ -98,13 +136,14 @@ function handle_form_submission() {
                 'good' => floatval($_POST['good']),
                 'average' => floatval($_POST['average']),
                 'sold_out' => intval($_POST['sold_out']),
+                'image_id' => $attach_id,
             ),
             array('id' => intval($_POST['id']))
         );
         echo '<script type="text/javascript">window.location="' . admin_url('admin.php?page=my_custom_table_list') . '";</script>';
         exit;
     }
-    
+
     // Delete record
     if (isset($_POST['delete'])) {
         $wpdb->delete($table_name, array('id' => intval($_POST['id'])));
@@ -112,7 +151,8 @@ function handle_form_submission() {
 }
 
 // Function to display the custom table list with search and layout adjustments
-function display_custom_table_list() {
+function display_custom_table_list()
+{
     global $wpdb;
     $table_name = $wpdb->prefix . 'buy_phones_plugin';
 
@@ -130,7 +170,7 @@ function display_custom_table_list() {
     // Left side: Form for inserting or updating a record
     echo '<div style="flex: 1; padding: 20px;">';
     echo '<h2>' . ($edit_data ? 'Edit Entry' : 'Add New Entry') . '</h2>';
-    echo '<form method="post">';
+    echo '<form method="post" enctype="multipart/form-data">';
     echo '<input type="hidden" name="id" value="' . esc_attr($edit_data ? $edit_data->id : '') . '">';
     echo '<table class="form-table">';
     echo '<tr><th>Brand Name</th><td><input type="text" name="brand_name" value="' . esc_attr($edit_data ? $edit_data->brand_name : '') . '" required></td></tr>';
@@ -140,6 +180,7 @@ function display_custom_table_list() {
     echo '<tr><th>Good</th><td><input type="number" step="0.01" name="good" value="' . esc_attr($edit_data ? $edit_data->good : '') . '" required></td></tr>';
     echo '<tr><th>Average</th><td><input type="number" step="0.01" name="average" value="' . esc_attr($edit_data ? $edit_data->average : '') . '" required></td></tr>';
     echo '<tr><th>Sold Out</th><td><input type="number" name="sold_out" value="' . esc_attr($edit_data ? $edit_data->sold_out : '') . '" required></td></tr>';
+    echo '<tr><th>Image</th><td><input type="file" name="phone_image" accept="image/*"></td></tr>';
     echo '</table>';
     echo '<input type="submit" name="' . ($edit_data ? 'update' : 'insert') . '" value="' . ($edit_data ? 'Update' : 'Add New') . '" class="button-primary">';
     echo '</form>';
@@ -151,7 +192,7 @@ function display_custom_table_list() {
     echo '<input type="text" id="search-input" placeholder="Search by brand or model..." style="margin-bottom: 20px;">';
     echo '<div id="records-table" style="height: 480px; overflow-y: scroll;">';
     echo '<table class="wp-list-table widefat fixed striped">';
-    echo '<thead style="position: sticky; top: 0; background-color: #f1f1f1; z-index: 1;"><tr><th>ID</th><th>Brand Name</th><th>Model Name</th><th>Variant</th><th>Excellent</th><th>Good</th><th>Average</th><th>Sold Out</th><th>Actions</th></tr></thead>';
+    echo '<thead style="position: sticky; top: 0; background-color: #f1f1f1; z-index: 1;"><tr><th>ID</th><th>Brand Name</th><th>Model Name</th><th>Variant</th><th>Excellent</th><th>Good</th><th>Average</th><th>Sold Out</th><th>Image</th><th>Actions</th></tr></thead>';
     echo '<tbody>';
 
     $results = $wpdb->get_results("SELECT * FROM $table_name");
@@ -165,6 +206,7 @@ function display_custom_table_list() {
         echo '<td>' . esc_html($row->good) . '</td>';
         echo '<td>' . esc_html($row->average) . '</td>';
         echo '<td>' . esc_html($row->sold_out) . '</td>';
+        echo '<td><img src="' . wp_get_attachment_url($row->image_id) . '" style="width:50px;height:auto;"></td>';
         echo '<td>';
         echo '<a href="?page=my_custom_table_list&edit=' . esc_attr($row->id) . '" class="button-secondary"><span class="dashicons dashicons-edit"></span></a> ';
         echo '<form method="post" style="display:inline-block;">';
@@ -203,15 +245,15 @@ function display_custom_table_list() {
 add_shortcode('buy_phones_search', 'buy_phones_search_shortcode');
 
 // Function to display the search form and results container
-function buy_phones_search_shortcode() {
+function buy_phones_search_shortcode()
+{
     ?>
     <div style="padding: 20px;">
-    <input type="text" id="phoneSearch" placeholder="Search by brand or model...">
-    <div id="searchResults" style="display:none; cursor: pointer;"></div>
-    <div id="priceDisplay" style="display:none;">
-        <div id="priceContent"></div>
-    </div>
-    <button id="backToSearch" style="display:none;">Back to Search</button>
+        <input type="text" id="phoneSearch" placeholder="Search by brand or model...">
+        <div id="searchResults" style="display:none; cursor: pointer;"></div>
+        <div id="priceDisplay" style="display:none;">
+            <div id="priceContent"></div>
+        </div>
     </div>
 
     <script type="text/javascript">
@@ -219,9 +261,8 @@ function buy_phones_search_shortcode() {
         const resultsDiv = document.getElementById('searchResults');
         const priceDisplay = document.getElementById('priceDisplay');
         const priceContent = document.getElementById('priceContent');
-        const backToSearchButton = document.getElementById('backToSearch');
 
-        searchInput.addEventListener('input', function() {
+        searchInput.addEventListener('input', function () {
             const searchText = searchInput.value.trim();
 
             if (searchText.length > 0) {
@@ -236,7 +277,10 @@ function buy_phones_search_shortcode() {
                                 const div = document.createElement('div');
                                 div.className = 'result-item';
                                 div.textContent = item.variant ? `${item.model_name} (${item.variant})` : item.model_name;
-                                div.onclick = () => displayPrice(item);
+                                div.onclick = () => {
+                                    displayPrice(item);
+                                    searchInput.value = div.textContent;
+                                };
                                 resultsDiv.appendChild(div);
                             });
                         }
@@ -254,26 +298,17 @@ function buy_phones_search_shortcode() {
         });
 
         function displayPrice(item) {
-            searchInput.style.display = 'none';
             resultsDiv.style.display = 'none';
-            priceContent.innerHTML = `<h2>${item.variant ? `${item.model_name} (${item.variant})` : `${item.model_name}`}</h2>
-                                      <p class="price">Excellent Condition: ₹${item.excellent}</p>
-                                      <p class="price">Good Condition: ₹${item.good}</p>
-                                      <p class="price">Average Condition: ₹${item.average}</p>
-                                      <p>${item.sold_out}+ already sold on Phonestation Plus</p>`;
+            const imageUrl = item.image_url;
+            priceContent.innerHTML = `
+                <img src="${imageUrl}" style="width:100px; height:auto;">
+                <h2>${item.variant ? `${item.model_name} (${item.variant})` : `${item.model_name}`}</h2>
+                <p class="price">Excellent Condition: ₹${item.excellent}</p>
+                <p class="price">Good Condition: ₹${item.good}</p>
+                <p class="price">Average Condition: ₹${item.average}</p>
+                <p>${item.sold_out}+ already sold on Phonestation Plus</p>`;
             priceDisplay.style.display = 'block';
-            backToSearchButton.style.display = 'block';
         }
-
-        backToSearchButton.addEventListener('click', function() {
-            priceDisplay.style.display = 'none';
-            priceContent.innerHTML = '';
-            backToSearchButton.style.display = 'none';
-            searchInput.style.display = 'block';
-            resultsDiv.style.display = 'none';
-            searchInput.value = '';
-            searchInput.focus();
-        });
     </script>
     <?php
 }
@@ -283,15 +318,17 @@ add_shortcode('buy_phones_search', 'buy_phones_search_shortcode');
 add_action('wp_ajax_buy_phones_search', 'buy_phones_search_handler');
 add_action('wp_ajax_nopriv_buy_phones_search', 'buy_phones_search_handler');
 
-function buy_phones_search_handler() {
+function buy_phones_search_handler()
+{
     global $wpdb;
     $table_name = $wpdb->prefix . 'buy_phones_plugin';
     $search = sanitize_text_field($_GET['query']);
 
     $results = $wpdb->get_results($wpdb->prepare(
-        "SELECT * FROM $table_name WHERE model_name LIKE %s",
-        $wpdb->esc_like($search) . '%',
-        $wpdb->esc_like($search) . '%'
+        "SELECT p.*, pm.guid AS image_url FROM $table_name p
+         LEFT JOIN {$wpdb->prefix}posts pm ON p.image_id = pm.ID
+         WHERE p.model_name LIKE %s",
+        '%' . $wpdb->esc_like($search) . '%'
     ), ARRAY_A);
 
     echo json_encode($results);
