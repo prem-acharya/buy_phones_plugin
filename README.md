@@ -1,6 +1,6 @@
 # Buy Phones Plugin
 
-![image](https://github.com/user-attachments/assets/22f52bce-ff42-42de-874f-d8f734b03131)
+![image](https://github.com/user-attachments/assets/a586ce41-a7ac-4086-9392-d2575f95e731)
 
 
 ## Description
