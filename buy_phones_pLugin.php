@@ -276,6 +276,7 @@ function buy_phones_search_shortcode()
             <p id="modalDetails"></p>
             <button onclick="closeModal()">Close</button>
         </div>
+        <div id="overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999;"></div>
     </div>
 
     <script type="text/javascript">
@@ -335,26 +336,37 @@ function buy_phones_search_shortcode()
             priceDisplay.style.display = 'block';
         }
 
+        function displayPrice(price) {
+            let priceParagraph = document.querySelector('.price');
+            if (!priceParagraph) {
+                priceParagraph = document.createElement('p');
+                priceParagraph.className = 'price';
+                priceContent.appendChild(priceParagraph);
+            }
+            priceParagraph.textContent = `Price: ₹${price}`;
+        }
+
         function showSellButton(model, variant, price, imageUrl) {
             const sellButtonHtml = `<button onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}')">Sell This Item</button>`;
-            priceContent.innerHTML += `<div id="sellButton">${sellButtonHtml}</div>`;
+            const sellButtonDiv = document.getElementById('sellButton');
+            if (!sellButtonDiv) {
+                const newDiv = document.createElement('div');
+                newDiv.id = 'sellButton';
+                priceContent.appendChild(newDiv);
+            }
+            document.getElementById('sellButton').innerHTML = sellButtonHtml;
         }
 
         function showSellItemForm(model, variant, price, imageUrl) {
             modalTitle.textContent = 'Sell This Item';
             modalDetails.innerHTML = `<img src="${imageUrl}" style="width:100px; height:auto;"><br>Model: ${model}, Variant: ${variant}, Price: ₹${price}`;
+            document.getElementById('overlay').style.display = 'block'; // Show the overlay
             sellItemModal.style.display = 'block';
         }
 
         function closeModal() {
             sellItemModal.style.display = 'none';
-        }
-
-        function displayPrice(price) {
-            const priceParagraph = document.createElement('p');
-            priceParagraph.className = 'price';
-            priceParagraph.textContent = `Price: ₹${price}`;
-            priceContent.appendChild(priceParagraph);
+            document.getElementById('overlay').style.display = 'none'; // Hide the overlay
         }
     </script>
     <?php
