@@ -1,8 +1,8 @@
 <?php
 /*
-Plugin Name: Buy Phones PLugin
+Plugin Name: Phones Request
 Description: A plugin to manage phone sales and inventory.
-Version: 1.2
+Version: 1.3
 Author: Prem Acharya
 */
 
@@ -272,7 +272,7 @@ function buy_phones_search_shortcode()
         </div>
         <!-- Modal for displaying selected item details -->
         <div id="sellItemModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:1000; background:white; padding:20px; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-            <h2 id="modalTitle"></h2>
+            <p id="modalTitle"></p>
             <p id="modalDetails"></p>
             <button onclick="closeModal()">Close</button>
         </div>
@@ -328,9 +328,9 @@ function buy_phones_search_shortcode()
             priceContent.innerHTML = `
                 <img src="${item.image_url}" style="width:100px; height:auto;">
                 <h2>${item.variant ? `${item.model_name} (${item.variant})` : `${item.model_name}`}</h2>
-                <button onclick="displayPrice(${item.excellent}); showSellButton('${item.model_name}', '${item.variant}', ${item.excellent}, '${item.image_url}');">Excellent Condition</button>
-                <button onclick="displayPrice(${item.good}); showSellButton('${item.model_name}', '${item.variant}', ${item.good}, '${item.image_url}');">Good Condition</button>
-                <button onclick="displayPrice(${item.average}); showSellButton('${item.model_name}', '${item.variant}', ${item.average}, '${item.image_url}');">Average Condition</button>
+                <button onclick="displayPrice(${item.excellent}); showSellButton('${item.model_name}', '${item.variant}', ${item.excellent}, '${item.image_url}', ${item.image_id});">Excellent Condition</button>
+                <button onclick="displayPrice(${item.good}); showSellButton('${item.model_name}', '${item.variant}', ${item.good}, '${item.image_url}', ${item.image_id});">Good Condition</button>
+                <button onclick="displayPrice(${item.average}); showSellButton('${item.model_name}', '${item.variant}', ${item.average}, '${item.image_url}', ${item.image_id});">Average Condition</button>
                 <p>${item.sold_out}+ already sold on Phonestation Plus</p>
             `;
             priceDisplay.style.display = 'block';
@@ -346,8 +346,8 @@ function buy_phones_search_shortcode()
             priceParagraph.textContent = `Price: ₹${price}`;
         }
 
-        function showSellButton(model, variant, price, imageUrl) {
-            const sellButtonHtml = `<button onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}')">Sell This Item</button>`;
+        function showSellButton(model, variant, price, imageUrl, imageId) {
+            const sellButtonHtml = `<button onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}', ${imageId})">Sell This Item</button>`;
             const sellButtonDiv = document.getElementById('sellButton');
             if (!sellButtonDiv) {
                 const newDiv = document.createElement('div');
@@ -357,11 +357,54 @@ function buy_phones_search_shortcode()
             document.getElementById('sellButton').innerHTML = sellButtonHtml;
         }
 
-        function showSellItemForm(model, variant, price, imageUrl) {
+        function showSellItemForm(model, variant, price, imageUrl, imageId) {
             modalTitle.textContent = 'Sell This Item';
-            modalDetails.innerHTML = `<img src="${imageUrl}" style="width:100px; height:auto;"><br>Model: ${model}, Variant: ${variant}, Price: ₹${price}`;
+            modalDetails.innerHTML = `
+                <img src="${imageUrl}" style="width:100px; height:auto;"><br>
+                Model: ${model}, Variant: ${variant}, Price: ₹${price}
+                <form id="sellItemForm" method="post">
+                    <input type="hidden" name="model" value="${model}">
+                    <input type="hidden" name="variant" value="${variant}">
+                    <input type="hidden" name="price" value="${price}">
+                    <input type="hidden" name="image_url" value="${imageUrl}">
+                    <input type="hidden" name="image_id" value="${imageId}">
+                    <label>Name:<input type="text" name="name" required></label><br>
+                    <label>Email:<input type="email" name="email" required></label><br>
+                    <label>Mobile:<input type="number" name="mobile" required pattern="\\d*"></label><br>
+                    <label>Address Line 1:<input type="text" name="address1" required></label><br>
+                    <label>Address Line 2:<input type="text" name="address2"></label><br>
+                    <label>Postal Code:<input type="number" name="postalCode" required pattern="\\d*"></label><br>
+                    <p>Choose Payment Method:</p>
+                    <input type="radio" id="bank" name="paymentMethod" value="bank" onclick="togglePaymentMethod('bank')" checked>
+                    <label for="bank">Bank</label>
+                    <input type="radio" id="paypal" name="paymentMethod" value="paypal" onclick="togglePaymentMethod('paypal')">
+                    <label for="paypal">PayPal</label>
+                    <div id="bankDetails" style="display:block;">
+                        <label>Bank Name:<input type="text" name="bankName"></label><br>
+                        <label>Account Holder:<input type="text" name="accountHolder"></label><br>
+                        <label>Sort Code:<input type="text" name="sortCode" pattern="\\d{6}"></label><br>
+                        <label>Account Number:<input type="number" name="accountNumber"></label><br>
+                        <label>IBAN:<input type="text" name="iban"></label><br>
+                    </div>
+                    <div id="paypalDetails" style="display:none;">
+                        <label>PayPal ID:<input type="text" name="paypalId"></label><br>
+                        <label>PayPal Associated Email:<input type="email" name="paypalEmail"></label><br>
+                    </div>
+                    <button type="submit" name="submit_sell_item">Submit</button>
+                </form>
+            `;
             document.getElementById('overlay').style.display = 'block'; // Show the overlay
             sellItemModal.style.display = 'block';
+        }
+
+        function togglePaymentMethod(method) {
+            if (method === 'bank') {
+                document.getElementById('bankDetails').style.display = 'block';
+                document.getElementById('paypalDetails').style.display = 'none';
+            } else {
+                document.getElementById('bankDetails').style.display = 'none';
+                document.getElementById('paypalDetails').style.display = 'block';
+            }
         }
 
         function closeModal() {
@@ -401,3 +444,77 @@ function buy_phones_search_handler()
 }
 add_action('wp_ajax_buy_phones_search', 'buy_phones_search_handler');
 add_action('wp_ajax_nopriv_buy_phones_search', 'buy_phones_search_handler');
+
+// Create the sell_request table on plugin activation
+register_activation_hook(__FILE__, 'create_sell_request_table');
+
+// Function to create the sell_request table
+function create_sell_request_table() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'sell_request';
+
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+        id INT(11) NOT NULL AUTO_INCREMENT,
+        model VARCHAR(255) NOT NULL,
+        variant VARCHAR(255) NOT NULL,
+        price DECIMAL(10, 2) NOT NULL,
+        image_id INT(11),
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        mobile VARCHAR(255) NOT NULL,
+        address_line_1 VARCHAR(255),
+        address_line_2 VARCHAR(255),
+        postal_code VARCHAR(255),
+        bank_name VARCHAR(255),
+        account_holder VARCHAR(255),
+        sort_code VARCHAR(255),
+        account_number VARCHAR(255),
+        iban VARCHAR(255),
+        paypal_id VARCHAR(255),
+        paypal_email VARCHAR(255),
+        PRIMARY KEY (id)
+    ) $charset_collate;";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+}
+
+// Function to handle sell item form submission
+function handle_sell_item_form_submission() {
+    if (isset($_POST['submit_sell_item'])) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'sell_request';
+
+        $payment_method = sanitize_text_field($_POST['paymentMethod']);
+        $data = array(
+            'model' => sanitize_text_field($_POST['model']),
+            'variant' => sanitize_text_field($_POST['variant']),
+            'price' => floatval($_POST['price']),
+            'image_id' => isset($_POST['image_id']) ? intval($_POST['image_id']) : null,
+            'name' => sanitize_text_field($_POST['name']),
+            'email' => sanitize_email($_POST['email']),
+            'mobile' => sanitize_text_field($_POST['mobile']),
+            'address_line_1' => sanitize_text_field($_POST['address1']),
+            'address_line_2' => sanitize_text_field($_POST['address2']),
+            'postal_code' => sanitize_text_field($_POST['postalCode'])
+        );
+
+        if ($payment_method == 'bank') {
+            $data['bank_name'] = sanitize_text_field($_POST['bankName']);
+            $data['account_holder'] = sanitize_text_field($_POST['accountHolder']);
+            $data['sort_code'] = sanitize_text_field($_POST['sortCode']);
+            $data['account_number'] = sanitize_text_field($_POST['accountNumber']);
+            $data['iban'] = sanitize_text_field($_POST['iban']);
+        } else {
+            $data['paypal_id'] = sanitize_text_field($_POST['paypalId']);
+            $data['paypal_email'] = sanitize_email($_POST['paypalEmail']);
+        }
+
+        $wpdb->insert($table_name, $data);
+        echo '<script>alert("Submission successful!");</script>';
+    }
+}
+
+add_action('init', 'handle_sell_item_form_submission');
