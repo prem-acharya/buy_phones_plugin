@@ -61,7 +61,7 @@ function add_admin_bar_menu($wp_admin_bar)
     $args = array(
         'id' => 'my_plugin_menu',
         'title' => 'Buy Phones',
-        'href' => admin_url('admin.php?page=my_custom_table_list'),
+        'href' => admin_url('admin.php?page=buy_phones'),
         'meta' => array('class' => 'my-plugin-menu')
     );
     $wp_admin_bar->add_node($args);
@@ -74,7 +74,7 @@ function register_my_admin_page()
         'Buy Phones',
         'Buy Phones',
         'manage_options',
-        'my_custom_table_list',
+        'buy_phones',
         'display_custom_table_list',
         'dashicons-smartphone',
         20
@@ -146,7 +146,7 @@ function handle_form_submission()
             ),
             array('id' => intval($_POST['id']))
         );
-        echo '<script type="text/javascript">window.location="' . admin_url('admin.php?page=my_custom_table_list') . '";</script>';
+        echo '<script type="text/javascript">window.location="' . admin_url('admin.php?page=buy_phones') . '";</script>';
         exit;
     }
 
@@ -224,7 +224,7 @@ function display_custom_table_list()
         echo '<td>' . esc_html($row->sold_out) . '</td>';
         echo '<td><img src="' . wp_get_attachment_url($row->image_id) . '" style="width:50px;height:auto;"></td>';
         echo '<td>';
-        echo '<a href="?page=my_custom_table_list&edit=' . esc_attr($row->id) . '" class="button-secondary"><span class="dashicons dashicons-edit"></span></a> ';
+        echo '<a href="?page=buy_phones&edit=' . esc_attr($row->id) . '" class="button-secondary"><span class="dashicons dashicons-edit"></span></a> ';
         echo '<form method="post" style="display:inline-block;">';
         echo '<input type="hidden" name="id" value="' . esc_attr($row->id) . '">';
         echo '<button type="submit" name="delete" class="button-secondary" onclick="return confirm(\'Are you sure you want to delete this entry?\');"><span class="dashicons dashicons-trash"></span></button>';
@@ -518,3 +518,5 @@ function handle_sell_item_form_submission() {
 }
 
 add_action('init', 'handle_sell_item_form_submission');
+
+require_once(plugin_dir_path(__FILE__) . 'sell_request.php');
