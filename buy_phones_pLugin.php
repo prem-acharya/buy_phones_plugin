@@ -55,6 +55,12 @@ function enqueue_media_library_scripts() {
     wp_enqueue_script('my-plugin-media-script', plugin_dir_url(__FILE__) . 'buy_phones_plugin_media_script.js', array('jquery'), '1.0', true);
 }
 
+function enqueue_plugin_styles() {
+    wp_enqueue_style('my-plugin-styles', plugin_dir_url(__FILE__) . 'style.css');
+}
+
+add_action('wp_enqueue_scripts', 'enqueue_plugin_styles');
+
 // Function to add menu to the admin bar
 function add_admin_bar_menu($wp_admin_bar)
 {
@@ -272,8 +278,8 @@ function buy_phones_search_shortcode()
         </div>
         <!-- Modal for displaying selected item details -->
         <div id="sellItemModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:1000; background:white; padding:20px; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-            <p id="modalTitle"></p>
-            <p id="modalDetails"></p>
+            <div id="modalTitle"></div>
+            <div id="modalDetails"></div>
             <button onclick="closeModal()">Close</button>
         </div>
         <div id="overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999;"></div>
@@ -326,38 +332,56 @@ function buy_phones_search_shortcode()
         function displayPriceOptions(item) {
             resultsDiv.style.display = 'none';
             priceContent.innerHTML = `
+                <div class="model_name">
                 <img src="${item.image_url}" style="width:100px; height:auto;">
-                <h2>${item.variant ? `${item.model_name} (${item.variant})` : `${item.model_name}`}</h2>
-                <button onclick="displayPrice(${item.excellent}); showSellButton('${item.model_name}', '${item.variant}', ${item.excellent}, '${item.image_url}', ${item.image_id});">Excellent Condition</button>
-                <button onclick="displayPrice(${item.good}); showSellButton('${item.model_name}', '${item.variant}', ${item.good}, '${item.image_url}', ${item.image_id});">Good Condition</button>
-                <button onclick="displayPrice(${item.average}); showSellButton('${item.model_name}', '${item.variant}', ${item.average}, '${item.image_url}', ${item.image_id});">Average Condition</button>
-                <p>${item.sold_out}+ already sold on Phonestation Plus</p>
+                <div>${item.variant ? `${item.model_name} (${item.variant})` : `${item.model_name}`}</div>
+                </div>
+                <div class="conditions_button_and_already_sold">
+                <button onclick="displayPrice(${item.excellent}); showSellButton('${item.model_name}', '${item.variant}', ${item.excellent}, '${item.image_url}', ${item.image_id}, 'Excellent');">Excellent Condition</button>
+                <button onclick="displayPrice(${item.good}); showSellButton('${item.model_name}', '${item.variant}', ${item.good}, '${item.image_url}', ${item.image_id}, 'Good');">Good Condition</button>
+                <button onclick="displayPrice(${item.average}); showSellButton('${item.model_name}', '${item.variant}', ${item.average}, '${item.image_url}', ${item.image_id}, 'Average');">Average Condition</button>
+                <div>${item.sold_out}+ already sold on Phonestation Plus</div>
+                </div>
             `;
             priceDisplay.style.display = 'block';
         }
 
         function displayPrice(price) {
-            let priceParagraph = document.querySelector('.price');
+            let mainDiv = document.querySelector('.price-and-sell-button');
+            if (!mainDiv) {
+                mainDiv = document.createElement('div');
+                mainDiv.className = 'price-and-sell-button';
+                priceContent.appendChild(mainDiv);
+            }
+
+            let priceParagraph = mainDiv.querySelector('.price');
             if (!priceParagraph) {
-                priceParagraph = document.createElement('p');
+                priceParagraph = document.createElement('div');
                 priceParagraph.className = 'price';
-                priceContent.appendChild(priceParagraph);
+                mainDiv.appendChild(priceParagraph);
             }
             priceParagraph.textContent = `Price: ₹${price}`;
         }
 
-        function showSellButton(model, variant, price, imageUrl, imageId) {
-            const sellButtonHtml = `<button onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}', ${imageId})">Sell This Item</button>`;
-            const sellButtonDiv = document.getElementById('sellButton');
-            if (!sellButtonDiv) {
-                const newDiv = document.createElement('div');
-                newDiv.id = 'sellButton';
-                priceContent.appendChild(newDiv);
+        function showSellButton(model, variant, price, imageUrl, imageId, condition) {
+            let mainDiv = document.querySelector('.price-and-sell-button');
+            if (!mainDiv) {
+                mainDiv = document.createElement('div');
+                mainDiv.className = 'price-and-sell-button';
+                priceContent.appendChild(mainDiv);
             }
-            document.getElementById('sellButton').innerHTML = sellButtonHtml;
+
+            const sellButtonHtml = `<button onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}', ${imageId}, '${condition}')">Sell This Item</button>`;
+            let sellButtonDiv = mainDiv.querySelector('#sellButton');
+            if (!sellButtonDiv) {
+                sellButtonDiv = document.createElement('div');
+                sellButtonDiv.id = 'sellButton';
+                mainDiv.appendChild(sellButtonDiv);
+            }
+            sellButtonDiv.innerHTML = sellButtonHtml;
         }
 
-        function showSellItemForm(model, variant, price, imageUrl, imageId) {
+        function showSellItemForm(model, variant, price, imageUrl, imageId, condition) {
             modalTitle.textContent = 'Sell This Item';
             modalDetails.innerHTML = `
                 <img src="${imageUrl}" style="width:100px; height:auto;"><br>
@@ -368,6 +392,7 @@ function buy_phones_search_shortcode()
                     <input type="hidden" name="price" value="${price}">
                     <input type="hidden" name="image_url" value="${imageUrl}">
                     <input type="hidden" name="image_id" value="${imageId}">
+                    <input type="hidden" name="phone_condition" value="${condition}">
                     <label>Name:<input type="text" name="name" required></label><br>
                     <label>Email:<input type="email" name="email" required></label><br>
                     <label>Mobile:<input type="number" name="mobile" required pattern="\\d*"></label><br>
@@ -445,20 +470,20 @@ function buy_phones_search_handler()
 add_action('wp_ajax_buy_phones_search', 'buy_phones_search_handler');
 add_action('wp_ajax_nopriv_buy_phones_search', 'buy_phones_search_handler');
 
-// Create the sell_request table on plugin activation
+// Correctly set up the activation hook
 register_activation_hook(__FILE__, 'create_sell_request_table');
 
 // Function to create the sell_request table
 function create_sell_request_table() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'sell_request';
-
     $charset_collate = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE $table_name (
         id INT(11) NOT NULL AUTO_INCREMENT,
         model VARCHAR(255) NOT NULL,
         variant VARCHAR(255) NOT NULL,
+        phone_condition VARCHAR(255),
         price DECIMAL(10, 2) NOT NULL,
         image_id INT(11),
         name VARCHAR(255) NOT NULL,
@@ -474,6 +499,7 @@ function create_sell_request_table() {
         iban VARCHAR(255),
         paypal_id VARCHAR(255),
         paypal_email VARCHAR(255),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (id)
     ) $charset_collate;";
 
@@ -493,6 +519,7 @@ function handle_sell_item_form_submission() {
             'variant' => sanitize_text_field($_POST['variant']),
             'price' => floatval($_POST['price']),
             'image_id' => isset($_POST['image_id']) ? intval($_POST['image_id']) : null,
+            'phone_condition' => sanitize_text_field($_POST['phone_condition']),  // Include the condition
             'name' => sanitize_text_field($_POST['name']),
             'email' => sanitize_email($_POST['email']),
             'mobile' => sanitize_text_field($_POST['mobile']),
@@ -513,7 +540,8 @@ function handle_sell_item_form_submission() {
         }
 
         $wpdb->insert($table_name, $data);
-        echo '<script>alert("Submission successful!");</script>';
+        wp_redirect(add_query_arg('message', 'success', wp_get_referer()));
+        exit;
     }
 }
 

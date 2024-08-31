@@ -27,13 +27,14 @@ function sell_phones_page_content() {
     echo '<div class="wrap"><h1>Sell Phones Entries</h1>';
     echo '<div id="records-table" style="height: 600px; overflow-y: scroll;">';
     echo '<table class="wp-list-table widefat fixed striped">';
-    echo '<thead style="position: sticky; top: 0; background-color: #f1f1f1; z-index: 1;"><tr><th>ID</th><th>Model</th><th>Variant</th><th>Price</th><th>Image</th><th>Name</th><th>Email</th><th>Mobile</th><th>Address 1</th><th>Address 2</th><th>Postal Code</th><th>Bank Name</th><th>AccountHolder</th><th>Sort Code</th><th>Account No.</th><th>IBAN</th><th>PayPal ID</th><th>PayPal Email</th><th>Actions</th></tr></thead>';
+    echo '<thead style="position: sticky; top: 0; background-color: #f1f1f1; z-index: 1;"><tr><th>ID</th><th>Model</th><th>Variant</th><th>Condition</th><th>Price</th><th>Image</th><th>Name</th><th>Email</th><th>Mobile</th><th>Address 1</th><th>Address 2</th><th>Postal Code</th><th>Bank Name</th><th>AccountHolder</th><th>Sort Code</th><th>Account No.</th><th>IBAN</th><th>PayPal ID</th><th>PayPal Email</th><th>Actions</th></tr></thead>';
     echo '<tbody>';
     foreach ($results as $row) {
         echo '<tr>';
         echo '<td>' . esc_html($row['id']) . '</td>';
         echo '<td>' . esc_html($row['model']) . '</td>';
         echo '<td>' . esc_html($row['variant']) . '</td>';
+        echo '<td>' . esc_html($row['phone_condition']) . '</td>';
         echo '<td>' . esc_html($row['price']) . '</td>';
         echo '<td><img src="' . wp_get_attachment_url($row['image_id']) . '" style="width:50px;height:auto;"></td>';
         echo '<td>' . esc_html($row['name']) . '</td>';
