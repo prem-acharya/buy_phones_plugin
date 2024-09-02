@@ -1,11 +1,19 @@
-.model_name{
-    background-color: blue;
+.model{
+    background-color: rgb(159, 159, 255);
 }
 
 .conditions_button_and_already_sold{
-    background-color: blueviolet;
+    background-color: rgb(208, 157, 255);
 }
 
-.price-and-sell-button{
-    background-color: aqua;
+.condition_details{
+    background-color: rgb(253, 178, 178);
+}
+
+.item-summary{
+    background-color: rgb(142, 255, 255);
+}
+
+.no-scroll {
+    overflow: hidden;
 }

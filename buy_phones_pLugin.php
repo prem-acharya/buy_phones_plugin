@@ -332,53 +332,78 @@ function buy_phones_search_shortcode()
         function displayPriceOptions(item) {
             resultsDiv.style.display = 'none';
             priceContent.innerHTML = `
-                <div class="model_name">
+                <div class="model_and_condition_button">
+                <div class="model">
                 <img src="${item.image_url}" style="width:100px; height:auto;">
                 <div>${item.variant ? `${item.model_name} (${item.variant})` : `${item.model_name}`}</div>
                 </div>
                 <div class="conditions_button_and_already_sold">
-                <button onclick="displayPrice(${item.excellent}); showSellButton('${item.model_name}', '${item.variant}', ${item.excellent}, '${item.image_url}', ${item.image_id}, 'Excellent');">Excellent Condition</button>
-                <button onclick="displayPrice(${item.good}); showSellButton('${item.model_name}', '${item.variant}', ${item.good}, '${item.image_url}', ${item.image_id}, 'Good');">Good Condition</button>
-                <button onclick="displayPrice(${item.average}); showSellButton('${item.model_name}', '${item.variant}', ${item.average}, '${item.image_url}', ${item.image_id}, 'Average');">Average Condition</button>
                 <div>${item.sold_out}+ already sold on Phonestation Plus</div>
+                <button onclick="displayPrice(${item.excellent}, '${item.model_name}', '${item.variant}', 'Excellent', '${item.image_url}', ${item.image_id});">Excellent Condition</button>
+                <button onclick="displayPrice(${item.good}, '${item.model_name}', '${item.variant}', 'Good', '${item.image_url}', ${item.image_id});">Good Condition</button>
+                <button onclick="displayPrice(${item.average}, '${item.model_name}', '${item.variant}', 'Average', '${item.image_url}', ${item.image_id});">Average Condition</button>
+                </div>
+                <div class="condition_details" id="condition_details">
+                </div>
                 </div>
             `;
             priceDisplay.style.display = 'block';
         }
 
-        function displayPrice(price) {
-            let mainDiv = document.querySelector('.price-and-sell-button');
+        function displayPrice(price, model, variant, condition, imageUrl, imageId) {
+            let mainDiv = document.querySelector('.item-summary');
             if (!mainDiv) {
                 mainDiv = document.createElement('div');
-                mainDiv.className = 'price-and-sell-button';
+                mainDiv.className = 'item-summary';
                 priceContent.appendChild(mainDiv);
             }
 
-            let priceParagraph = mainDiv.querySelector('.price');
-            if (!priceParagraph) {
-                priceParagraph = document.createElement('div');
-                priceParagraph.className = 'price';
-                mainDiv.appendChild(priceParagraph);
+            let conditionDetails = document.getElementById('condition_details');
+            let conditionText = '';
+            switch (condition) {
+                case 'Excellent':
+                    conditionText = `
+                        <strong>Excellent Condition</strong>
+                        <ul>
+                            <li>Flawless appearance with no visible scratches on screen and/or body</li>
+                            <li>No cracks, chips, dents or defective pixels (e.g screen burn, dead pixels, liquid damage), and the touchscreen works</li>
+                            <li>Battery health above 80%</li>
+                            <li>All parts of the device are fully working</li>
+                        </ul>
+                    `;
+                    break;
+                case 'Good':
+                    conditionText = `
+                        <strong>Good Condition</strong>
+                        <ul>
+                            <li>Signs of wear on screen and/or body</li>
+                            <li>No cracks, chips, dents or defective pixels (e.g screen burn, dead pixels, liquid damage), and the touchscreen works</li>
+                            <li>All parts of the device are fully working</li>
+                        </ul>
+                    `;
+                    break;
+                case 'Average':
+                    conditionText = `
+                        <strong>Average Condition</strong>
+                        <ul>
+                            <li>Heavy signs of scratching and/or wear on device</li>
+                            <li>Cracks, chips, dents or defective pixels (e.g screen burn, dead pixels, liquid damage) to screen or back</li>
+                            <li>Any functional defect and/or intermittent issues</li>
+                            <li>We cannot buy your device if it is missing components or is bent, crushed, snapped in half or does not power on</li>
+                        </ul>
+                    `;
+                    break;
             }
-            priceParagraph.textContent = `Price: ₹${price}`;
-        }
+            conditionDetails.innerHTML = conditionText;
 
-        function showSellButton(model, variant, price, imageUrl, imageId, condition) {
-            let mainDiv = document.querySelector('.price-and-sell-button');
-            if (!mainDiv) {
-                mainDiv = document.createElement('div');
-                mainDiv.className = 'price-and-sell-button';
-                priceContent.appendChild(mainDiv);
-            }
-
-            const sellButtonHtml = `<button onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}', ${imageId}, '${condition}')">Sell This Item</button>`;
-            let sellButtonDiv = mainDiv.querySelector('#sellButton');
-            if (!sellButtonDiv) {
-                sellButtonDiv = document.createElement('div');
-                sellButtonDiv.id = 'sellButton';
-                mainDiv.appendChild(sellButtonDiv);
-            }
-            sellButtonDiv.innerHTML = sellButtonHtml;
+            mainDiv.innerHTML = `
+                <div>Item Summary</div>
+                <div>Item - ${model}</div>
+                <div>Variant - ${variant}</div>
+                <div>Condition - ${condition}</div>
+                <div>We'll pay you: ₹${price}</div>
+                <button onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}', ${imageId}, '${condition}')">Sell This Item</button>
+            `;
         }
 
         function showSellItemForm(model, variant, price, imageUrl, imageId, condition) {
@@ -418,7 +443,8 @@ function buy_phones_search_shortcode()
                     <button type="submit" name="submit_sell_item">Submit</button>
                 </form>
             `;
-            document.getElementById('overlay').style.display = 'block'; // Show the overlay
+            document.body.classList.add('no-scroll');
+            document.getElementById('overlay').style.display = 'block';
             sellItemModal.style.display = 'block';
         }
 
@@ -434,7 +460,8 @@ function buy_phones_search_shortcode()
 
         function closeModal() {
             sellItemModal.style.display = 'none';
-            document.getElementById('overlay').style.display = 'none'; // Hide the overlay
+            document.getElementById('overlay').style.display = 'none';
+            document.body.classList.remove('no-scroll');
         }
     </script>
     <?php
