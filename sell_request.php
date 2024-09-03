@@ -20,7 +20,9 @@ function sell_phones_page_content() {
     $table_name = $wpdb->prefix . 'sell_request';
 
     handle_sell_request_form_submission(); // Handle form submissions
-    display_sell_request_form(); // Display the form
+    if (isset($_GET['edit'])) {
+        display_sell_request_form(); // Display the form only if edit is set
+    }
 
     // Fetch and display entries
     $results = $wpdb->get_results("SELECT * FROM $table_name", ARRAY_A);
@@ -81,11 +83,11 @@ function display_sell_request_form() {
     echo '.form-row, .form-button-row { clear: both; margin-bottom: 50px}';
     echo '</style>';
 
-    echo '<div class="flex: 1; padding: 20px;">';
-    echo '<h2>' . ($edit_data ? 'Edit Sell Request' : 'Add New Sell Request') . '</h2>';
+    echo '<div id="edit-form" style="padding: 20px;">';
+    echo '<h2>Edit Sell Request</h2>';
     echo '<form method="post" enctype="multipart/form-data">';
     echo '<input type="hidden" name="id" value="' . esc_attr($edit_data['id'] ?? '') . '">';
-    echo '<input type="hidden" name="form_type" value="' . ($edit_data ? 'update' : 'insert') . '">';
+    echo '<input type="hidden" name="form_type" value="update">';
 
     // Each group of label and input is wrapped in a div with class "form-group"
     echo '<div class="form-group"><label>Model:<input type="text" name="model" value="' . esc_attr($edit_data['model'] ?? '') . '" required></label></div>';
@@ -110,7 +112,7 @@ function display_sell_request_form() {
     echo '<div class="form-group"><label>PayPal Email:<input type="email" name="paypalEmail" value="' . esc_attr($edit_data['paypal_email'] ?? '') . '"></label></div>';
 
     echo '<div class="form-button-row">';
-    echo '<button type="submit" class="button-secondary" name="submit">' . ($edit_data ? 'Update' : 'Add New') . '</button>';
+    echo '<button type="submit" class="button-secondary" name="submit">Update</button>';
     echo '</div>';
 
     echo '</form>';
@@ -173,14 +175,12 @@ function handle_sell_request_form_submission() {
 
         if ($_POST['form_type'] === 'update') {
             $wpdb->update($table_name, $data, array('id' => intval($_POST['id'])));
-        } else {
-            $wpdb->insert($table_name, $data);
+            echo '<script type="text/javascript">document.addEventListener("DOMContentLoaded", function() { document.getElementById("edit-form").style.display = "none"; });</script>';
         }
-
-        echo '<script type="text/javascript">window.location="' . admin_url('admin.php?page=sell_phones') . '";</script>';
     }
 
     if (isset($_POST['delete']) && isset($_POST['id'])) {
         $wpdb->delete($table_name, ['id' => intval($_POST['id'])]);
+        echo '<script type="text/javascript">document.addEventListener("DOMContentLoaded", function() { document.getElementById("edit-form").style.display = "none"; });</script>';
     }
 }
