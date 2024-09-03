@@ -401,7 +401,7 @@ function buy_phones_search_shortcode()
                 <div>Item - ${model}</div>
                 <div>Variant - ${variant}</div>
                 <div>Condition - ${condition}</div>
-                <div>We'll pay you: ₹${price}</div>
+                <div>We'll pay you: £${price}</div>
                 <button onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}', ${imageId}, '${condition}')">Sell This Item</button>
             `;
         }
@@ -410,7 +410,7 @@ function buy_phones_search_shortcode()
             modalTitle.textContent = 'Sell This Item';
             modalDetails.innerHTML = `
                 <img src="${imageUrl}" style="width:100px; height:auto;"><br>
-                Model: ${model}, Variant: ${variant}, Price: ₹${price}
+                Model: ${model}, Variant: ${variant}, Price: £${price}
                 <form id="sellItemForm" method="post">
                     <input type="hidden" name="model" value="${model}">
                     <input type="hidden" name="variant" value="${variant}">
@@ -420,10 +420,10 @@ function buy_phones_search_shortcode()
                     <input type="hidden" name="phone_condition" value="${condition}">
                     <label>Name:<input type="text" name="name" required></label><br>
                     <label>Email:<input type="email" name="email" required></label><br>
-                    <label>Mobile:<input type="number" name="mobile" required pattern="\\d*"></label><br>
+                    <label>Mobile:<input type="text" name="mobile" required pattern="07\\d{9}"></label><br>
                     <label>Address Line 1:<input type="text" name="address1" required></label><br>
                     <label>Address Line 2:<input type="text" name="address2"></label><br>
-                    <label>Postal Code:<input type="number" name="postalCode" required pattern="\\d*"></label><br>
+                    <label>Postal Code:<input type="text" name="postalCode" required pattern="[A-Z]{1,2}[0-9][A-Z0-9]?\\s?[0-9][A-Z]{2}"></label><br>
                     <p>Choose Payment Method:</p>
                     <input type="radio" id="bank" name="paymentMethod" value="bank" onclick="togglePaymentMethod('bank')" checked>
                     <label for="bank">Bank</label>
