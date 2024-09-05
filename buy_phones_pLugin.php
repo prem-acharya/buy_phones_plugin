@@ -50,12 +50,14 @@ function my_plugin_init()
 }
 
 
-function enqueue_media_library_scripts() {
+function enqueue_media_library_scripts()
+{
     wp_enqueue_media();
     wp_enqueue_script('my-plugin-media-script', plugin_dir_url(__FILE__) . 'buy_phones_plugin_media_script.js', array('jquery'), '1.0', true);
 }
 
-function enqueue_plugin_styles() {
+function enqueue_plugin_styles()
+{
     wp_enqueue_style('my-plugin-styles', plugin_dir_url(__FILE__) . 'style.css');
 }
 
@@ -202,7 +204,7 @@ function display_custom_table_list()
     }
     echo '</div>';
     echo '</td></tr>';
-    
+
     echo '</table>';
     echo '<input type="submit" name="' . ($edit_data ? 'update' : 'insert') . '" value="' . ($edit_data ? 'Update' : 'Add New') . '" class="button-primary">';
     echo '</form>';
@@ -270,19 +272,19 @@ add_shortcode('buy_phones_search', 'buy_phones_search_shortcode');
 function buy_phones_search_shortcode()
 {
     ?>
-    <div style="padding: 20px;">
-        <input type="text" id="phoneSearch" placeholder="Search by brand or model...">
-        <div id="searchResults" style="display:none; cursor: pointer;"></div>
-        <div id="priceDisplay" style="display:none;">
-            <div id="priceContent"></div>
+    <div class="buy_phone_search">
+        <input type="text" id="phoneSearch" class="buy_phone_search_phoneSearch" placeholder="Enter your item, e.g. 'iPhone 14'">
+        <div id="searchResults" class="buy_phone_search_searchResults"></div>
+        <div id="priceDisplay" class="buy_phone_search_priceDisplay">
+            <div id="priceContent" class="buy_phone_search_priceContent"></div>
         </div>
         <!-- Modal for displaying selected item details -->
-        <div id="sellItemModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:1000; background:white; padding:20px; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-            <div id="modalTitle"></div>
-            <div id="modalDetails"></div>
-            <button onclick="closeModal()">Close</button>
+        <div id="sellItemModal" class="buy_phone_search_sellItemModal">
+            <div id="modalTitle" class="buy_phone_search_modalTitle"></div>
+            <div id="modalDetails" class="buy_phone_search_modalDetails"></div>
+            <button class="buy_phone_search_close_button" onclick="closeModal()">Close</button>
         </div>
-        <div id="overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999;"></div>
+        <div id="overlay" class="buy_phone_search_overlay"></div>
     </div>
 
     <script type="text/javascript">
@@ -302,12 +304,12 @@ function buy_phones_search_shortcode()
                     .then(response => response.json())
                     .then(data => {
                         if (data.length === 0) {
-                            resultsDiv.innerHTML = '<div class="not-found">No results found</div>';
+                            resultsDiv.innerHTML = '<div class="buy_phone_search_not_found">No results found</div>';
                         } else {
                             resultsDiv.innerHTML = '';
                             data.forEach(item => {
                                 const div = document.createElement('div');
-                                div.className = 'result-item';
+                                div.className = 'buy_phone_search_result_item';
                                 div.innerHTML = `<img src="${item.image_url}" alt="${item.model_name}" style="width:50px; height:auto;"> ${item.variant ? `${item.model_name} (${item.variant})` : item.model_name}`;
                                 div.onclick = () => {
                                     displayPriceOptions(item);
@@ -320,7 +322,7 @@ function buy_phones_search_shortcode()
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        resultsDiv.innerHTML = '<div class="not-found">Error fetching results</div>';
+                        resultsDiv.innerHTML = '<div class="buy_phone_search_not_found">Error fetching results</div>';
                         resultsDiv.style.display = 'block';
                     });
             } else {
@@ -332,30 +334,57 @@ function buy_phones_search_shortcode()
         function displayPriceOptions(item) {
             resultsDiv.style.display = 'none';
             priceContent.innerHTML = `
-                <div class="model_and_condition_button">
-                <div class="model">
-                <img src="${item.image_url}" style="width:100px; height:auto;">
-                <div>${item.variant ? `${item.model_name} (${item.variant})` : `${item.model_name}`}</div>
-                </div>
-                <div class="conditions_button_and_already_sold">
-                <div>${item.sold_out}+ already sold on Phonestation Plus</div>
-                <button onclick="displayPrice(${item.excellent}, '${item.model_name}', '${item.variant}', 'Excellent', '${item.image_url}', ${item.image_id});">Excellent Condition</button>
-                <button onclick="displayPrice(${item.good}, '${item.model_name}', '${item.variant}', 'Good', '${item.image_url}', ${item.image_id});">Good Condition</button>
-                <button onclick="displayPrice(${item.average}, '${item.model_name}', '${item.variant}', 'Average', '${item.image_url}', ${item.image_id});">Average Condition</button>
-                </div>
-                <div class="condition_details" id="condition_details">
-                </div>
-                </div>
-            `;
+                    <div class="buy_phone_search_header">${item.variant ? `${item.model_name} (${item.variant})` : `${item.model_name}`}</div>
+                    <div class="buy_phone_search_model_and_condition_button">
+                    <div class="buy_phone_search_model">
+                    <div class="buy_phone_search_img">
+                    <img src="${item.image_url}">
+                    </div>
+                    </div>
+                    <div class="buy_phone_search_conditions_button_and_already_sold">
+                    <div class="buy_phone_search_conditions_text">Please select the condition</div>
+                    <div class="buy_phone_condition_button_main">
+                    <button id="excellentBtn" class="buy_phone_condition_button" onclick="displayPrice(${item.excellent}, '${item.model_name}', '${item.variant}', 'Excellent', '${item.image_url}', ${item.image_id});">Excellent Condition</button>
+                    <button class="buy_phone_condition_button" onclick="displayPrice(${item.good}, '${item.model_name}', '${item.variant}', 'Good', '${item.image_url}', ${item.image_id});">Good Condition</button>
+                    <button class="buy_phone_condition_button" onclick="displayPrice(${item.average}, '${item.model_name}', '${item.variant}', 'Average', '${item.image_url}', ${item.image_id});">Average Condition</button>
+                    </div>
+                    <div class="buy_phone_search_condition_details" id="condition_details">
+                    </div>
+                    <div>${item.sold_out}+ already sold on Phonestation Plus</div>
+                    </div>
+                    </div>
+                `;
             priceDisplay.style.display = 'block';
+            document.getElementById('excellentBtn').click();
         }
 
         function displayPrice(price, model, variant, condition, imageUrl, imageId) {
-            let mainDiv = document.querySelector('.item-summary');
-            if (!mainDiv) {
-                mainDiv = document.createElement('div');
-                mainDiv.className = 'item-summary';
-                priceContent.appendChild(mainDiv);
+            let mainDiv = document.querySelector('.buy_phone_search_model_and_condition_button');
+            let itemSummaryDiv = mainDiv.querySelector('.buy_phone_search_item_summary');
+
+            // If an item summary already exists, update it
+            if (itemSummaryDiv) {
+                itemSummaryDiv.innerHTML = `
+                    <div>Item Summary</div>
+                    <div>Item - ${model}</div>
+                    <div>Variant - ${variant}</div>
+                    <div>Condition - ${condition}</div>
+                    <div>We'll pay you: £${price}</div>
+                    <button onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}', ${imageId}, '${condition}')">Sell This Item</button>
+                `;
+            } else {
+                // If no item summary exists, create it
+                itemSummaryDiv = document.createElement('div');
+                itemSummaryDiv.className = 'buy_phone_search_item_summary';
+                itemSummaryDiv.innerHTML = `
+                    <div>Item Summary</div>
+                    <div>Item - ${model}</div>
+                    <div>Variant - ${variant}</div>
+                    <div>Condition - ${condition}</div>
+                    <div>We'll pay you: £${price}</div>
+                    <button onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}', ${imageId}, '${condition}')">Sell This Item</button>
+                `;
+                mainDiv.appendChild(itemSummaryDiv);
             }
 
             let conditionDetails = document.getElementById('condition_details');
@@ -363,87 +392,78 @@ function buy_phones_search_shortcode()
             switch (condition) {
                 case 'Excellent':
                     conditionText = `
-                        <strong>Excellent Condition</strong>
-                        <ul>
-                            <li>Flawless appearance with no visible scratches on screen and/or body</li>
-                            <li>No cracks, chips, dents or defective pixels (e.g screen burn, dead pixels, liquid damage), and the touchscreen works</li>
-                            <li>Battery health above 80%</li>
-                            <li>All parts of the device are fully working</li>
-                        </ul>
-                    `;
+                            <strong>Excellent Condition</strong>
+                            <ul>
+                                <li>Flawless appearance with no visible scratches on screen and/or body</li>
+                                <li>No cracks, chips, dents or defective pixels (e.g screen burn, dead pixels, liquid damage), and the touchscreen works</li>
+                                <li>Battery health above 80%</li>
+                                <li>All parts of the device are fully working</li>
+                            </ul>
+                        `;
                     break;
                 case 'Good':
                     conditionText = `
-                        <strong>Good Condition</strong>
-                        <ul>
-                            <li>Signs of wear on screen and/or body</li>
-                            <li>No cracks, chips, dents or defective pixels (e.g screen burn, dead pixels, liquid damage), and the touchscreen works</li>
-                            <li>All parts of the device are fully working</li>
-                        </ul>
-                    `;
+                            <strong>Good Condition</strong>
+                            <ul>
+                                <li>Signs of wear on screen and/or body</li>
+                                <li>No cracks, chips, dents or defective pixels (e.g screen burn, dead pixels, liquid damage), and the touchscreen works</li>
+                                <li>All parts of the device are fully working</li>
+                            </ul>
+                        `;
                     break;
                 case 'Average':
                     conditionText = `
-                        <strong>Average Condition</strong>
-                        <ul>
-                            <li>Heavy signs of scratching and/or wear on device</li>
-                            <li>Cracks, chips, dents or defective pixels (e.g screen burn, dead pixels, liquid damage) to screen or back</li>
-                            <li>Any functional defect and/or intermittent issues</li>
-                            <li>We cannot buy your device if it is missing components or is bent, crushed, snapped in half or does not power on</li>
-                        </ul>
-                    `;
+                            <strong>Average Condition</strong>
+                            <ul>
+                                <li>Heavy signs of scratching and/or wear on device</li>
+                                <li>Cracks, chips, dents or defective pixels (e.g screen burn, dead pixels, liquid damage) to screen or back</li>
+                                <li>Any functional defect and/or intermittent issues</li>
+                                <li>We cannot buy your device if it is missing components or is bent, crushed, snapped in half or does not power on</li>
+                            </ul>
+                        `;
                     break;
             }
             conditionDetails.innerHTML = conditionText;
-
-            mainDiv.innerHTML = `
-                <div>Item Summary</div>
-                <div>Item - ${model}</div>
-                <div>Variant - ${variant}</div>
-                <div>Condition - ${condition}</div>
-                <div>We'll pay you: £${price}</div>
-                <button onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}', ${imageId}, '${condition}')">Sell This Item</button>
-            `;
         }
 
         function showSellItemForm(model, variant, price, imageUrl, imageId, condition) {
             modalTitle.textContent = 'Sell This Item';
             modalDetails.innerHTML = `
-                <img src="${imageUrl}" style="width:100px; height:auto;"><br>
-                Model: ${model}, Variant: ${variant}, Price: £${price}
-                <form id="sellItemForm" method="post">
-                    <input type="hidden" name="model" value="${model}">
-                    <input type="hidden" name="variant" value="${variant}">
-                    <input type="hidden" name="price" value="${price}">
-                    <input type="hidden" name="image_url" value="${imageUrl}">
-                    <input type="hidden" name="image_id" value="${imageId}">
-                    <input type="hidden" name="phone_condition" value="${condition}">
-                    <label>Name:<input type="text" name="name" required></label><br>
-                    <label>Email:<input type="email" name="email" required></label><br>
-                    <label>Mobile:<input type="text" name="mobile" required pattern="07\\d{9}"></label><br>
-                    <label>Address Line 1:<input type="text" name="address1" required></label><br>
-                    <label>Address Line 2:<input type="text" name="address2"></label><br>
-                    <label>Postal Code:<input type="text" name="postalCode" required pattern="[A-Z]{1,2}[0-9][A-Z0-9]?\\s?[0-9][A-Z]{2}"></label><br>
-                    <p>Choose Payment Method:</p>
-                    <input type="radio" id="bank" name="paymentMethod" value="bank" onclick="togglePaymentMethod('bank')" checked>
-                    <label for="bank">Bank</label>
-                    <input type="radio" id="paypal" name="paymentMethod" value="paypal" onclick="togglePaymentMethod('paypal')">
-                    <label for="paypal">PayPal</label>
-                    <div id="bankDetails" style="display:block;">
-                        <label>Bank Name:<input type="text" name="bankName"></label><br>
-                        <label>Account Holder:<input type="text" name="accountHolder"></label><br>
-                        <label>Sort Code:<input type="text" name="sortCode" pattern="\\d{6}"></label><br>
-                        <label>Account Number:<input type="number" name="accountNumber"></label><br>
-                        <label>IBAN:<input type="text" name="iban"></label><br>
-                    </div>
-                    <div id="paypalDetails" style="display:none;">
-                        <label>PayPal ID:<input type="text" name="paypalId"></label><br>
-                        <label>PayPal Associated Email:<input type="email" name="paypalEmail"></label><br>
-                    </div>
-                    <button type="submit" name="submit_sell_item">Submit</button>
-                </form>
-            `;
-            document.body.classList.add('no-scroll');
+                    <img src="${imageUrl}" style="width:100px; height:auto;"><br>
+                    Model: ${model}, Variant: ${variant}, Price: £${price}
+                    <form id="sellItemForm" method="post">
+                        <input type="hidden" name="model" value="${model}">
+                        <input type="hidden" name="variant" value="${variant}">
+                        <input type="hidden" name="price" value="${price}">
+                        <input type="hidden" name="image_url" value="${imageUrl}">
+                        <input type="hidden" name="image_id" value="${imageId}">
+                        <input type="hidden" name="phone_condition" value="${condition}">
+                        <label>Name:<input type="text" name="name" required></label><br>
+                        <label>Email:<input type="email" name="email" required></label><br>
+                        <label>Mobile:<input type="text" name="mobile" required pattern="07\\d{9}"></label><br>
+                        <label>Address Line 1:<input type="text" name="address1" required></label><br>
+                        <label>Address Line 2:<input type="text" name="address2"></label><br>
+                        <label>Postal Code:<input type="text" name="postalCode" required pattern="[A-Z]{1,2}[0-9][A-Z0-9]?\\s?[0-9][A-Z]{2}"></label><br>
+                        <p>Choose Payment Method:</p>
+                        <input type="radio" id="bank" name="paymentMethod" value="bank" onclick="togglePaymentMethod('bank')" checked>
+                        <label for="bank">Bank</label>
+                        <input type="radio" id="paypal" name="paymentMethod" value="paypal" onclick="togglePaymentMethod('paypal')">
+                        <label for="paypal">PayPal</label>
+                        <div id="bankDetails" style="display:block;">
+                            <label>Bank Name:<input type="text" name="bankName"></label><br>
+                            <label>Account Holder:<input type="text" name="accountHolder"></label><br>
+                            <label>Sort Code:<input type="text" name="sortCode" pattern="\\d{6}"></label><br>
+                            <label>Account Number:<input type="number" name="accountNumber"></label><br>
+                            <label>IBAN:<input type="text" name="iban"></label><br>
+                        </div>
+                        <div id="paypalDetails" style="display:none;">
+                            <label>PayPal ID:<input type="text" name="paypalId"></label><br>
+                            <label>PayPal Associated Email:<input type="email" name="paypalEmail"></label><br>
+                        </div>
+                        <button type="submit" name="submit_sell_item">Submit</button>
+                    </form>
+                `;
+            document.body.classList.add('buy_phone_search_no_scroll');
             document.getElementById('overlay').style.display = 'block';
             sellItemModal.style.display = 'block';
         }
@@ -461,8 +481,9 @@ function buy_phones_search_shortcode()
         function closeModal() {
             sellItemModal.style.display = 'none';
             document.getElementById('overlay').style.display = 'none';
-            document.body.classList.remove('no-scroll');
+            document.body.classList.remove('buy_phone_search_no_scroll');
         }
+
     </script>
     <?php
 }
@@ -490,7 +511,7 @@ function buy_phones_search_handler()
         error_log('JSON encode error: ' . json_last_error_msg());
         wp_die('Error encoding JSON', '', array('response' => 500));
     }
-    
+
     echo $json_output;
     wp_die();
 }
@@ -501,7 +522,8 @@ add_action('wp_ajax_nopriv_buy_phones_search', 'buy_phones_search_handler');
 register_activation_hook(__FILE__, 'create_sell_request_table');
 
 // Function to create the sell_request table
-function create_sell_request_table() {
+function create_sell_request_table()
+{
     global $wpdb;
     $table_name = $wpdb->prefix . 'sell_request';
     $charset_collate = $wpdb->get_charset_collate();
@@ -535,7 +557,8 @@ function create_sell_request_table() {
 }
 
 // Function to handle sell item form submission
-function handle_sell_item_form_submission() {
+function handle_sell_item_form_submission()
+{
     if (isset($_POST['submit_sell_item'])) {
         global $wpdb;
         $table_name = $wpdb->prefix . 'sell_request';
