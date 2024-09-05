@@ -326,6 +326,7 @@ function buy_phones_search_shortcode()
                         resultsDiv.style.display = 'block';
                     });
             } else {
+                searchInput.style.display= 'none';
                 resultsDiv.style.display = 'none';
                 resultsDiv.innerHTML = '';
             }
@@ -344,7 +345,7 @@ function buy_phones_search_shortcode()
                     <div class="buy_phone_search_conditions_button_and_already_sold">
                     <div class="buy_phone_search_conditions_text">Please select the condition</div>
                     <div class="buy_phone_condition_button_main">
-                    <button id="excellentBtn" class="buy_phone_condition_button" onclick="displayPrice(${item.excellent}, '${item.model_name}', '${item.variant}', 'Excellent', '${item.image_url}', ${item.image_id});">Excellent Condition</button>
+                    <button id="excellentBtn" class="buy_phone_condition_button active" onclick="displayPrice(${item.excellent}, '${item.model_name}', '${item.variant}', 'Excellent', '${item.image_url}', ${item.image_id});">Excellent Condition</button>
                     <button class="buy_phone_condition_button" onclick="displayPrice(${item.good}, '${item.model_name}', '${item.variant}', 'Good', '${item.image_url}', ${item.image_id});">Good Condition</button>
                     <button class="buy_phone_condition_button" onclick="displayPrice(${item.average}, '${item.model_name}', '${item.variant}', 'Average', '${item.image_url}', ${item.image_id});">Average Condition</button>
                     </div>
@@ -365,24 +366,28 @@ function buy_phones_search_shortcode()
             // If an item summary already exists, update it
             if (itemSummaryDiv) {
                 itemSummaryDiv.innerHTML = `
-                    <div>Item Summary</div>
+                    <div class="buy_phone_item_summary">Item Summary</div>
+                    <hr>
                     <div>Item - ${model}</div>
                     <div>Variant - ${variant}</div>
                     <div>Condition - ${condition}</div>
-                    <div>We'll pay you: £${price}</div>
-                    <button onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}', ${imageId}, '${condition}')">Sell This Item</button>
+                    <hr>
+                    <div class="buy_phone_search_final_price_text">We'll pay you: <div class="buy_phone_search_final_price">£${price}</div></div>
+                    <button class="buy_phone_search_sell_this_item" onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}', ${imageId}, '${condition}')">Sell This Item</button>
                 `;
             } else {
                 // If no item summary exists, create it
                 itemSummaryDiv = document.createElement('div');
                 itemSummaryDiv.className = 'buy_phone_search_item_summary';
                 itemSummaryDiv.innerHTML = `
-                    <div>Item Summary</div>
+                    <div class="buy_phone_item_summary">Item Summary</div>
+                    <hr>
                     <div>Item - ${model}</div>
                     <div>Variant - ${variant}</div>
                     <div>Condition - ${condition}</div>
-                    <div>We'll pay you: £${price}</div>
-                    <button onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}', ${imageId}, '${condition}')">Sell This Item</button>
+                    <hr>
+                    <div class="buy_phone_search_final_price_text">We'll pay you: <div class="buy_phone_search_final_price">£${price}</div></div>
+                    <button class="buy_phone_search_sell_this_item" onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}', ${imageId}, '${condition}')">Sell This Item</button>
                 `;
                 mainDiv.appendChild(itemSummaryDiv);
             }
@@ -424,6 +429,14 @@ function buy_phones_search_shortcode()
                     break;
             }
             conditionDetails.innerHTML = conditionText;
+
+            document.querySelectorAll('.buy_phone_condition_button').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.buy_phone_condition_button').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
         }
 
         function showSellItemForm(model, variant, price, imageUrl, imageId, condition) {
