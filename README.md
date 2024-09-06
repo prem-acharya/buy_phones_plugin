@@ -4,14 +4,16 @@
 
 
 ## Description
-**Buy Phones Plugin** is a comprehensive solution designed to manage phone sales and inventory directly within your WordPress site. Developed with ease of use in mind, it provides a seamless interface for handling phone inventories, including capabilities to add, update, and delete phone records.
+**Buy Phones Plugin** is a comprehensive solution designed to manage phone sales and inventory directly within your WordPress site. Developed with ease of use in mind, it provides a seamless interface for handling phone inventories, including capabilities to add, update, delete, and search for phone records.
 
 ## Features
 
-- **Database Integration**: Automatically creates a custom table in your WordPress database to store phone data.
-- **Admin Interface**: Easy-to-use admin interface to manage phone inventory.
+- **Database Integration**: Automatically creates custom tables in your WordPress database to store phone and sell request data.
+- **Admin Interface**: Easy-to-use admin interface to manage phone inventory and sell requests.
 - **CRUD Operations**: Supports Create, Read, Update, and Delete operations directly from the admin panel.
-- **Search Functionality**: Includes a dynamic search feature that allows users to search for phones by brand or model.
+- **Search Functionality**: Includes a dynamic AJAX search feature that allows users to search for phones by brand or model.
+- **Image Upload**: Allows image uploads for each phone entry, enhancing the visual information for inventory items.
+- **Sell Phones Feature**: Manage sell requests from customers, including handling personal and payment information securely.
 - **Shortcode Support**: Implements a shortcode `[buy_phones_search]` that can be used anywhere on your site to display a search interface.
 
 ## Installation
@@ -25,4 +27,9 @@
 
 After installation, the plugin will automatically create the necessary database tables. You can start adding phone data through the 'Buy Phones' menu in the admin dashboard.
 
-Use the shortcode `[buy_phones_search]` in your posts or pages to allow visitors to search through the phone database.
+Use the shortcode `[buy_phones_search]` in your posts or pages to allow visitors to search through the phone database. Manage sell requests through the 'Sell Phones' menu.
+
+## Additional Documentation
+
+- **Image Handling**: Utilizes WordPress's media uploader for image management. See the media script for details (`buy_phones_plugin_media_script.js`).
+- **Sell Phones Management**: Handles form submissions for selling phones, including validation and database operations (`sell_request.php`).
