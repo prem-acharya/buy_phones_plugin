@@ -313,7 +313,7 @@ function buy_phones_search_shortcode()
                                 div.innerHTML = `<img src="${item.image_url}" alt="${item.model_name}" style="width:50px; height:auto;"> ${item.variant ? `${item.model_name} (${item.variant})` : item.model_name}`;
                                 div.onclick = () => {
                                     displayPriceOptions(item);
-                                    searchInput.value = div.textContent;
+                                    searchInput.value = null;
                                 };
                                 resultsDiv.appendChild(div);
                             });
@@ -326,13 +326,14 @@ function buy_phones_search_shortcode()
                         resultsDiv.style.display = 'block';
                     });
             } else {
-                searchInput.style.display= 'none';
                 resultsDiv.style.display = 'none';
                 resultsDiv.innerHTML = '';
             }
         });
 
         function displayPriceOptions(item) {
+            
+            // searchInput.style.display= 'none';
             resultsDiv.style.display = 'none';
             priceContent.innerHTML = `
                     <div class="buy_phone_search_header">${item.variant ? `${item.model_name} (${item.variant})` : `${item.model_name}`}</div>
