@@ -336,7 +336,6 @@ function buy_phones_search_shortcode()
             // searchInput.style.display= 'none';
             resultsDiv.style.display = 'none';
             priceContent.innerHTML = `
-                    <div class="buy_phone_search_header">${item.variant ? `${item.model_name} (${item.variant})` : `${item.model_name}`}</div>
                     <div class="buy_phone_search_model_and_condition_button">
                     <div class="buy_phone_search_model">
                     <div class="buy_phone_search_img">
@@ -344,15 +343,18 @@ function buy_phones_search_shortcode()
                     </div>
                     </div>
                     <div class="buy_phone_search_conditions_button_and_already_sold">
+                    <div class="buy_phone_search_title">
+                    <div class="buy_phone_search_header">${item.variant ? `${item.model_name} (${item.variant})` : `${item.model_name}`}</div>
+                    <div class="buy_phone_search_sold_out">${item.sold_out}+ already sold on Phonestation Plus</div>
+                    </div>
                     <div class="buy_phone_search_conditions_text">Please select the condition</div>
                     <div class="buy_phone_condition_button_main">
-                    <button id="excellentBtn" class="buy_phone_condition_button active" onclick="displayPrice(${item.excellent}, '${item.model_name}', '${item.variant}', 'Excellent', '${item.image_url}', ${item.image_id});">Excellent Condition</button>
-                    <button class="buy_phone_condition_button" onclick="displayPrice(${item.good}, '${item.model_name}', '${item.variant}', 'Good', '${item.image_url}', ${item.image_id});">Good Condition</button>
-                    <button class="buy_phone_condition_button" onclick="displayPrice(${item.average}, '${item.model_name}', '${item.variant}', 'Average', '${item.image_url}', ${item.image_id});">Average Condition</button>
+                    <button id="excellentBtn" class="buy_phone_condition_button active" onclick="displayPrice(${item.excellent}, '${item.model_name}', '${item.variant}', 'Excellent', '${item.image_url}', ${item.image_id});">Excellent</button>
+                    <button class="buy_phone_condition_button" onclick="displayPrice(${item.good}, '${item.model_name}', '${item.variant}', 'Good', '${item.image_url}', ${item.image_id});">Good</button>
+                    <button class="buy_phone_condition_button" onclick="displayPrice(${item.average}, '${item.model_name}', '${item.variant}', 'Average', '${item.image_url}', ${item.image_id});">Average</button>
                     </div>
                     <div class="buy_phone_search_condition_details" id="condition_details">
                     </div>
-                    <div>${item.sold_out}+ already sold on Phonestation Plus</div>
                     </div>
                     </div>
                 `;
@@ -368,11 +370,11 @@ function buy_phones_search_shortcode()
             if (itemSummaryDiv) {
                 itemSummaryDiv.innerHTML = `
                     <div class="buy_phone_item_summary">Item Summary</div>
-                    <hr>
-                    <div>Item - ${model}</div>
-                    <div>Variant - ${variant}</div>
-                    <div>Condition - ${condition}</div>
-                    <hr>
+                    <div class="buy_phone_search_items">
+                    <div>Item <hr><div>${model}</div></div>
+                    <div>Variant <hr><div>${variant}</div></div>
+                    <div>Condition <hr><div>${condition}</div></div>
+                    </div>
                     <div class="buy_phone_search_final_price_text">We'll pay you: <div class="buy_phone_search_final_price">£${price}</div></div>
                     <button class="buy_phone_search_sell_this_item" onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}', ${imageId}, '${condition}')">Sell This Item</button>
                 `;
@@ -382,13 +384,16 @@ function buy_phones_search_shortcode()
                 itemSummaryDiv.className = 'buy_phone_search_item_summary';
                 itemSummaryDiv.innerHTML = `
                     <div class="buy_phone_item_summary">Item Summary</div>
-                    <hr>
-                    <div>Item - ${model}</div>
-                    <div>Variant - ${variant}</div>
-                    <div>Condition - ${condition}</div>
-                    <hr>
+                    <div class="buy_phone_search_items">
+                    
+                    <div>Item <hr><div>${model}</div></div>
+                    <div>Variant <hr><div>${variant}</div></div>
+                    <div>Condition <hr><div>${condition}</div></div>
+                    </div>
+                    <div class="buy_phone_search_price_sell_button">
                     <div class="buy_phone_search_final_price_text">We'll pay you: <div class="buy_phone_search_final_price">£${price}</div></div>
                     <button class="buy_phone_search_sell_this_item" onclick="showSellItemForm('${model}', '${variant}', ${price}, '${imageUrl}', ${imageId}, '${condition}')">Sell This Item</button>
+                    </div>
                 `;
                 mainDiv.appendChild(itemSummaryDiv);
             }
@@ -398,7 +403,6 @@ function buy_phones_search_shortcode()
             switch (condition) {
                 case 'Excellent':
                     conditionText = `
-                            <strong>Excellent Condition</strong>
                             <ul>
                                 <li>Flawless appearance with no visible scratches on screen and/or body</li>
                                 <li>No cracks, chips, dents or defective pixels (e.g screen burn, dead pixels, liquid damage), and the touchscreen works</li>
@@ -409,7 +413,6 @@ function buy_phones_search_shortcode()
                     break;
                 case 'Good':
                     conditionText = `
-                            <strong>Good Condition</strong>
                             <ul>
                                 <li>Signs of wear on screen and/or body</li>
                                 <li>No cracks, chips, dents or defective pixels (e.g screen burn, dead pixels, liquid damage), and the touchscreen works</li>
@@ -419,7 +422,6 @@ function buy_phones_search_shortcode()
                     break;
                 case 'Average':
                     conditionText = `
-                            <strong>Average Condition</strong>
                             <ul>
                                 <li>Heavy signs of scratching and/or wear on device</li>
                                 <li>Cracks, chips, dents or defective pixels (e.g screen burn, dead pixels, liquid damage) to screen or back</li>

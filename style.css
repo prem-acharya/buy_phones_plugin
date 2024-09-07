@@ -1,6 +1,20 @@
 .buy_phone_search_header {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: bold;
+}
+
+.buy_phone_search_title {
+  display: flex;
+}
+
+.buy_phone_search_sold_out {
+  margin-top: 12px;
+  margin-left: 4px;
+  font-size: small;
+}
+
+.buy_phone_search_conditions_text {
+  margin-top: 14px;
 }
 
 .buy_phone_search_searchResults {
@@ -89,15 +103,13 @@
 }
 
 .buy_phone_search_img img {
-  width: 60%;
   height: auto;
 }
 
 .buy_phone_search_model_and_condition_button {
   margin-top: 10px;
   display: flex;
-  gap: 16px;
-
+  gap: 22px;
 }
 
 .buy_phone_search_conditions_button_and_already_sold {
@@ -111,49 +123,78 @@
 }
 
 .buy_phone_condition_button {
+  margin-right: 16px;
+  gap: 10px;
+  padding: 8px 40px;
   font-size: 14px;
   text-align: center;
-  padding: 10px;
-  background-color: #dfdfdf;
-  border-radius: 4px;
+  background-color: #ddefff;
   border-color: transparent;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .buy_phone_condition_button.active {
   color: #ffffff;
-  background-color: #7eb5fa;
+  background-color: #072f5f;
 }
 
 .buy_phone_search_condition_details {
   margin-top: 10px;
+  border: 2px solid #bcdefc;
+  max-width: 430px;
 }
 
 .buy_phone_search_item_summary {
-  background-color: #efeeee;
+  text-align: center;
+  background-color: #ddefff;
+  color: #072f5f;
   padding: 10px;
+  width: 450px;
+}
+
+.buy_phone_search_items {
+  justify-content: space-evenly;
+  display: flex;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.buy_phone_search_items hr {
+  background-color: black;
+  width: 22px;
+  font-weight: bold;
+}
+
+.buy_phone_search_items h5 {
+  font-weight: bolder;
 }
 
 .buy_phone_item_summary {
   margin-top: 20px;
-  font-size: 24px;
-  font-weight: bold;
+  font-size: 32px;
+  font-weight: bolder;
 }
 
 .buy_phone_search_sell_this_item {
   width: 100%;
-  font-size: 14px;
+  font-size: 20px;
   text-align: center;
-  padding: 10px;
-  border-radius: 4px;
+  padding: 10px 16px;
   border-color: transparent;
   color: #fff;
   background-color: #090;
+  margin-right: 35px;
+}
+
+.buy_phone_search_price_sell_button {
+  display: flex;
+  margin-top: 45px;
 }
 
 .buy_phone_search_final_price_text {
-  margin-top: 20px;
-  text-align: center;
+  width: 100%;
+  margin-left: 30px;
+  margin-right: 30px;
 }
 
 .buy_phone_search_final_price {
@@ -167,14 +208,71 @@
 }
 
 /* Mobile devices */
-@media (max-width: 430px) {
+@media (max-width: 432px) {
   .buy_phone_condition_button_main {
     display: flex;
     justify-content: space-evenly;
   }
 
+  .buy_phone_search_model_and_condition_button {
+    padding: 10px;
+  }
+
   .buy_phone_search_sellItemModal {
     width: 100%;
+  }
+
+  .buy_phone_search_img {
+    display: block;
+  }
+
+  .buy_phone_search_img img {
+    height: auto;
+    width: 30%;
+  }
+
+  .buy_phone_search_title {
+    position: absolute;
+    margin: -112px 0px 0 120px;
+    display: block;
+  }
+
+  .buy_phone_search_header {
+    font-size: 16px;
+  }
+
+  .buy_phone_condition_button {
+    padding: 8px 22px;
+    margin: 2px;
+  }
+
+  .buy_phone_search_sell_this_item {
+    padding: 0;
+    font-size: 16px;
+    margin: 0 24px 0px 0px;
+  }
+
+  .buy_phone_search_final_price {
+    font-size: 18px;
+  }
+  
+  .buy_phone_search_final_price_text {
+    font-size: 12px;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .buy_phone_search_condition_details {
+    width: 100%;
+  }
+
+  .buy_phone_search_item_summary {
+    width: 95%;
+  }
+
+  .buy_phone_search_sold_out{
+    margin-left: 0;
+    margin-top: 8px;
   }
 }
 
